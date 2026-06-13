@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aspirantes | SiReSe</title>
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/vendors/bootstrap-icons/bootstrap-icons.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
+</head>
+<body>
+<div class="admin-shell">
+  <div class="admin-main">
+    <div class="admin-content">
+      <div class="container-fluid px-3 px-lg-4 py-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <div>
+            <h1 class="h3 mb-0">Listado de Aspirantes</h1>
+            <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0 small">
+              <li class="breadcrumb-item"><a href="index.html">Inicio</a></li>
+              <li class="breadcrumb-item active">Aspirantes</li>
+            </ol></nav>
+          </div>
+          <button class="btn btn-warning text-dark fw-semibold" onclick="abrirCorreoMasivo()">
+            <i class="bi bi-envelope-fill me-1"></i> Correo Masivo
+          </button>
+        </div>
+
+        <div id="alertMsg" class="alert d-none mb-3" role="alert"></div>
+
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <table id="tablaAspirantes" class="table table-hover w-100">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nombre</th>
+                  <th>Teléfono</th>
+                  <th>Correo</th>
+                  <th>Carrera</th>
+                  <th class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyAspirantes"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Ver Aspirante ===== -->
+<div class="modal fade" id="modalVer" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-circle me-2"></i>Datos del Aspirante</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label text-muted small fw-semibold">NOMBRE COMPLETO</label>
+          <input class="form-control" id="verNombre" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-muted small fw-semibold">TELÉFONO</label>
+          <input class="form-control" id="verTelefono" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-muted small fw-semibold">CORREO ELECTRÓNICO</label>
+          <input class="form-control" id="verEmail" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-muted small fw-semibold">CARRERA</label>
+          <input class="form-control" id="verCarrera" readonly>
+        </div>
+        <div class="mb-0">
+          <label class="form-label text-muted small fw-semibold">FECHA DE REGISTRO</label>
+          <input class="form-control" id="verFecha" readonly>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-danger" onclick="generarConstanciaPDF(currentAspiranteId)">
+          <i class="bi bi-file-earmark-pdf me-1"></i>Generar Constancia PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Correo Individual ===== -->
+<div class="modal fade" id="modalCorreoInd" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-envelope me-2"></i>Enviar Correo Individual</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info small mb-3">
+          <i class="bi bi-info-circle me-1"></i>
+          Destinatario: <strong id="correoIndDest"></strong>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Asunto <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="correoIndAsunto" placeholder="Indica el asunto del correo">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mensaje <span class="text-danger">*</span></label>
+          <textarea class="form-control" id="correoIndMensaje" rows="5" placeholder="Escribe tu mensaje aquí..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-warning text-dark" onclick="enviarCorreoIndividual()">
+          <i class="bi bi-send me-1"></i>Enviar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Correo Masivo ===== -->
+<div class="modal fade" id="modalCorreoMasivo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-envelope-fill me-2"></i>Correo Masivo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning small mb-3">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          Este correo se enviará a <strong>todos los aspirantes</strong> registrados.
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Asunto <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="correoMasivoAsunto" placeholder="Indica el asunto">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mensaje <span class="text-danger">*</span></label>
+          <textarea class="form-control" id="correoMasivoMensaje" rows="5" placeholder="Escribe tu mensaje..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" onclick="enviarCorreoMasivo()">
+          <i class="bi bi-send-fill me-1"></i>Enviar a todos
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Constancia PDF Preview ===== -->
+<div class="modal fade" id="modalConstancia" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Constancia del Aspirante</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <iframe id="constanciaFrame" src="" style="width:100%;height:500px;border:none;"></iframe>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <a id="btnDescargarConstancia" href="#" class="btn btn-danger" download>
+          <i class="bi bi-download me-1"></i>Descargar PDF
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="assets/js/main.js"></script>
+<script src="js/sirese-layout.js"></script>
+<script>
+  const API_BASE = 'http://localhost:8080/api';
+  let tablaAspirantes;
+  let currentAspiranteId = null;
+  let currentCorreoEmail = null;
+
+  const demoAspirantes = [
+    { id: 1, nombre: 'María García López',     telefono: '4921112233', email: 'maria.garcia@example.com',   carrera: 'Ing. Sistemas Computacionales', fecha: '2026-01-10' },
+    { id: 2, nombre: 'Juan Martínez Pérez',    telefono: '4923334455', email: 'juan.martinez@example.com',  carrera: 'Mecatrónica',                  fecha: '2026-01-11' },
+    { id: 3, nombre: 'Ana González Fernández', telefono: '4925556677', email: 'ana.gonzalez@example.com',   carrera: 'Inteligencia Artificial',      fecha: '2026-01-12' },
+    { id: 4, nombre: 'Luis Rodríguez Gómez',   telefono: '4927778899', email: 'luis.rodriguez@example.com', carrera: 'Ing. en Alimentos',            fecha: '2026-01-13' },
+    { id: 5, nombre: 'Carmen Sánchez Ruiz',    telefono: '4929990011', email: 'carmen.sanchez@example.com', carrera: 'Mecatrónica',                  fecha: '2026-01-14' },
+  ];
+
+  $(document).ready(function() {
+    tablaAspirantes = $('#tablaAspirantes').DataTable({
+      language: { url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json' },
+      dom: 'Bfrtip',
+      buttons: [
+        { extend: 'copy',  className: 'btn btn-sm btn-outline-secondary', text: '<i class="bi bi-clipboard me-1"></i>Copiar' },
+        { extend: 'csv',   className: 'btn btn-sm btn-outline-secondary', text: '<i class="bi bi-filetype-csv me-1"></i>CSV'  },
+        { extend: 'excel', className: 'btn btn-sm btn-outline-secondary', text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel' }
+      ],
+      columns: [
+        { data: 'id' },
+        { data: 'nombre' },
+        { data: 'telefono' },
+        { data: 'email' },
+        { data: 'carrera' },
+        {
+          data: null, orderable: false,
+          render: function(d) {
+            return `
+              <div class="d-flex gap-1 justify-content-center">
+                <button class="btn btn-sm btn-warning text-dark" title="Enviar correo individual"
+                  onclick="abrirCorreoIndividual(${d.id},'${d.nombre.replace(/'/g,"\\'")}','${d.email}')">
+                  <i class="bi bi-envelope"></i>
+                </button>
+                <button class="btn btn-sm btn-info text-white" title="Ver datos completos"
+                  onclick="verAspirante(${d.id})">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" title="Generar constancia PDF"
+                  onclick="generarConstanciaPDF(${d.id})">
+                  <i class="bi bi-printer"></i>
+                </button>
+              </div>`;
+          }
+        }
+      ]
+    });
+
+    cargarAspirantes();
+  });
+
+  function cargarAspirantes() {
+    fetch(`${API_BASE}/aspirantes`)
+      .then(res => res.json())
+      .then(data => tablaAspirantes.clear().rows.add(data).draw())
+      .catch(() => tablaAspirantes.clear().rows.add(demoAspirantes).draw());
+  }
+
+  function verAspirante(id) {
+    currentAspiranteId = id;
+    fetch(`${API_BASE}/aspirantes/${id}`)
+      .then(res => res.json())
+      .then(a => poblarModalVer(a))
+      .catch(() => {
+        const a = demoAspirantes.find(x => x.id === id);
+        if (a) poblarModalVer(a);
+      });
+  }
+
+  function poblarModalVer(a) {
+    document.getElementById('verNombre').value   = a.nombre;
+    document.getElementById('verTelefono').value = a.telefono;
+    document.getElementById('verEmail').value    = a.email;
+    document.getElementById('verCarrera').value  = a.carrera;
+    document.getElementById('verFecha').value    = a.fecha || '—';
+    new bootstrap.Modal(document.getElementById('modalVer')).show();
+  }
+
+  function abrirCorreoIndividual(id, nombre, email) {
+    currentAspiranteId = id;
+    currentCorreoEmail = email;
+    document.getElementById('correoIndDest').textContent = `${nombre} <${email}>`;
+    document.getElementById('correoIndAsunto').value = '';
+    document.getElementById('correoIndMensaje').value = '';
+    new bootstrap.Modal(document.getElementById('modalCorreoInd')).show();
+  }
+
+  function enviarCorreoIndividual() {
+    const asunto  = document.getElementById('correoIndAsunto').value.trim();
+    const mensaje = document.getElementById('correoIndMensaje').value.trim();
+    if (!asunto || !mensaje) { alert('Por favor completa asunto y mensaje.'); return; }
+
+    const datos = { aspiranteId: currentAspiranteId, asunto, mensaje };
+
+    fetch(`${API_BASE}/correo/individual`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos)
+    })
+    .then(res => res.json())
+    .then(() => {
+      bootstrap.Modal.getInstance(document.getElementById('modalCorreoInd')).hide();
+      mostrarAlerta('success', 'Correo enviado correctamente.');
+    })
+    .catch(() => {
+      bootstrap.Modal.getInstance(document.getElementById('modalCorreoInd')).hide();
+      mostrarAlerta('success', `(Demo) Correo simulado enviado a ${currentCorreoEmail}.`);
+    });
+  }
+
+  function abrirCorreoMasivo() {
+    document.getElementById('correoMasivoAsunto').value = '';
+    document.getElementById('correoMasivoMensaje').value = '';
+    new bootstrap.Modal(document.getElementById('modalCorreoMasivo')).show();
+  }
+
+  function enviarCorreoMasivo() {
+    const asunto  = document.getElementById('correoMasivoAsunto').value.trim();
+    const mensaje = document.getElementById('correoMasivoMensaje').value.trim();
+    if (!asunto || !mensaje) { alert('Por favor completa asunto y mensaje.'); return; }
+
+    fetch(`${API_BASE}/correo/masivo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asunto, mensaje })
+    })
+    .then(res => res.json())
+    .then(data => {
+      bootstrap.Modal.getInstance(document.getElementById('modalCorreoMasivo')).hide();
+      mostrarAlerta('success', `Correo enviado a ${data.total || 'todos los'} aspirantes.`);
+    })
+    .catch(() => {
+      bootstrap.Modal.getInstance(document.getElementById('modalCorreoMasivo')).hide();
+      mostrarAlerta('success', `(Demo) Correo masivo simulado enviado a ${demoAspirantes.length} aspirantes.`);
+    });
+  }
+
+  function generarConstanciaPDF(id) {
+    // Opens PDF generated by Spring Boot backend
+    const pdfUrl = `${API_BASE}/aspirantes/${id}/constancia.pdf`;
+    // Close any open modal first
+    document.querySelectorAll('.modal.show').forEach(m => bootstrap.Modal.getInstance(m)?.hide());
+    setTimeout(() => {
+      document.getElementById('constanciaFrame').src = pdfUrl;
+      document.getElementById('btnDescargarConstancia').href = pdfUrl;
+      new bootstrap.Modal(document.getElementById('modalConstancia')).show();
+    }, 300);
+  }
+
+  function mostrarAlerta(tipo, msg) {
+    const el = document.getElementById('alertMsg');
+    el.className = `alert alert-${tipo}`;
+    el.innerHTML = `<i class="bi bi-${tipo==='success'?'check-circle':'exclamation-triangle'}-fill me-2"></i>${msg}`;
+    el.classList.remove('d-none');
+    setTimeout(() => el.classList.add('d-none'), 5000);
+  }
+</script>
+</body>
+</html>

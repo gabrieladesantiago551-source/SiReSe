@@ -76,7 +76,7 @@
 <script src="assets/js/main.js"></script>
 <script src="js/sirese-layout.js"></script>
 <script>
-  const API_BASE = 'http://localhost:8080/api';
+  const API_BASE = '/api'; // ruta relativa: funciona igual en local y en Render
 
   const demoConstancias = [
     { id: 1, aspirante: 'María García López',     carrera: 'Ing. Sistemas Computacionales', fecha: '2026-01-15', aspiranteId: 1 },
@@ -112,9 +112,16 @@
 
   function verPDF(aspiranteId) {
     const url = `${API_BASE}/aspirantes/${aspiranteId}/constancia.pdf`;
-    document.getElementById('pdfFrame').src = url;
-    document.getElementById('btnDescPDF').href = url;
-    new bootstrap.Modal(document.getElementById('modalPDF')).show();
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error('PDF no disponible');
+        document.getElementById('pdfFrame').src = url;
+        document.getElementById('btnDescPDF').href = url;
+        new bootstrap.Modal(document.getElementById('modalPDF')).show();
+      })
+      .catch(() => {
+        alert('No se pudo generar la constancia. Verifica que el servidor esté disponible y que el aspirante exista.');
+      });
   }
 </script>
 </body>
